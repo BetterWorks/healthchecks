@@ -11,9 +11,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 import dj_database_url
-import newrelic.agent
 import os
-import warnings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,8 +20,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "---")
 DEBUG = os.environ.get("DEBUG", "f").lower().startswith("f")
 ALLOWED_HOSTS = [HOST]
 ALLOWED_DOMAIN = os.environ.get("ALLOWED_DOMAIN")
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL',
-    'healthchecks@example.org')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL', 'healthchecks@example.org')
 
 
 INSTALLED_APPS = (
@@ -92,9 +90,9 @@ if 'DATABASE_URL' in os.environ:
 if os.environ.get("DB") == "postgres":
     DATABASES = {
         'default': {
-            'ENGINE':   'django.db.backends.postgresql_psycopg2',
-            'NAME':     'hc',
-            'USER':     'postgres',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'hc',
+            'USER': 'postgres',
             'TEST': {'CHARSET': 'UTF8'}
         }
     }
@@ -103,8 +101,8 @@ if os.environ.get("DB") == "mysql":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'USER':     'root',
-            'NAME':     'hc',
+            'USER': 'root',
+            'NAME': 'hc',
             'TEST': {'CHARSET': 'UTF8'}
         }
     }
@@ -140,6 +138,3 @@ if 'POSTMARK_API_KEY' in os.environ:
     POSTMARK_SENDER = DEFAULT_FROM_EMAIL
     POSTMARK_TRACK_OPENS = True
     EMAIL_BACKEND = 'postmark.django_backend.EmailBackend'
-
-if 'NEW_RELIC_LICENSE_KEY' in os.environ:
-    newrelic.agent.initialize()
