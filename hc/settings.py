@@ -10,16 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
+import dj_database_url
+import newrelic.agent
 import os
 import warnings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-HOST = "localhost"
-SECRET_KEY = "---"
-DEBUG = True
-ALLOWED_HOSTS = []
-DEFAULT_FROM_EMAIL = 'healthchecks@example.org'
+HOST = os.environ.get("HOST", "localhost")
+SECRET_KEY = os.environ.get("SECRET_KEY", "---")
+DEBUG = os.environ.get("DEBUG", "f").lower().startswith("f")
+ALLOWED_HOSTS = [HOST]
+ALLOWED_DOMAIN = os.environ.get("ALLOWED_DOMAIN")
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL',
+    'healthchecks@example.org')
 
 
 INSTALLED_APPS = (
@@ -47,6 +51,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware'
 )
 
 ROOT_URLCONF = 'hc.urls'
@@ -78,6 +83,10 @@ DATABASES = {
     }
 }
 
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config()
+    DATABASES['default']['CONN_MAX_AGE'] = 60
+
 # You can switch database engine to postgres or mysql using environment
 # variable 'DB'. Travis CI does this.
 if os.environ.get("DB") == "postgres":
@@ -102,7 +111,7 @@ if os.environ.get("DB") == "mysql":
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.environ.get('TIME_ZONE', 'UTC')
 
 USE_I18N = True
 
@@ -110,7 +119,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-SITE_ROOT = "http://localhost:8000"
+SITE_ROOT = os.environ.get("SITE_ROOT", "http://localhost:8000")
 PING_ENDPOINT = SITE_ROOT + "/ping/"
 PING_EMAIL_DOMAIN = HOST
 STATIC_URL = '/static/'
@@ -124,8 +133,11 @@ STATICFILES_FINDERS = (
 COMPRESS_OFFLINE = True
 
 EMAIL_BACKEND = "djmail.backends.default.EmailBackend"
+if 'POSTMARK_API_KEY' in os.environ:
+    POSTMARK_API_KEY = os.environ['POSTMARK_API_KEY']
+    POSTMARK_SENDER = DEFAULT_FROM_EMAIL
+    POSTMARK_TRACK_OPENS = True
+    EMAIL_BACKEND = 'postmark.django_backend.EmailBackend'
 
-try:
-    from .local_settings import *
-except ImportError as e:
-    warnings.warn("local_settings.py not found, using defaults")
+if 'NEW_RELIC_LICENSE_KEY' in os.environ:
+    newrelic.agent.initialize()

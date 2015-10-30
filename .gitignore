@@ -3,3 +3,4 @@ __pycache__/
 .coverage
 local_settings.py
 static-collected
+hc.sqlite

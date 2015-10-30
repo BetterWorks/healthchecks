@@ -49,6 +49,5 @@ class Command(BaseCommand):
                 # Save status after the notification is sent
                 check.save()
 
-            time.sleep(1)
+            time.sleep(30)
             ticks = (ticks + 1) % 80
-            _log("." + ("\n" if ticks == 0 else ""))
