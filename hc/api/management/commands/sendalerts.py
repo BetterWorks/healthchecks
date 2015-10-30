@@ -28,10 +28,15 @@ class Command(BaseCommand):
                 _log(
                     "\nSending notification(s) about going down for %s\n" %
                     check.code)
-                check.send_alert()
+                try:
+                    check.send_alert()
 
-                # Save status after the notification is sent
-                check.save()
+                    # Save status after the notification is sent
+                    check.save()
+                except:
+                    _log(
+                        '\nError sending notification(s) for %s\n' %
+                        check.code)
 
             # Gone up?
             query = Check.objects
@@ -44,9 +49,14 @@ class Command(BaseCommand):
                 _log(
                     "\nSending notification(s) about going up for %s\n" %
                     check.code)
-                check.send_alert()
+                try:
+                    check.send_alert()
 
-                # Save status after the notification is sent
-                check.save()
+                    # Save status after the notification is sent
+                    check.save()
+                except:
+                    _log(
+                        '\nError sending notification(s) for %s\n' %
+                        check.code)
 
             time.sleep(30)
