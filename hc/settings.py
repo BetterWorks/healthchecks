@@ -134,9 +134,9 @@ STATICFILES_FINDERS = (
 )
 COMPRESS_OFFLINE = True
 
-EMAIL_BACKEND = "djmail.backends.default.EmailBackend"
+EMAIL_BACKEND = "djmail.backends.async.EmailBackend"
 if 'POSTMARK_API_KEY' in os.environ:
     POSTMARK_API_KEY = os.environ['POSTMARK_API_KEY']
     POSTMARK_SENDER = DEFAULT_FROM_EMAIL
     POSTMARK_TRACK_OPENS = True
-    EMAIL_BACKEND = 'postmark.django_backend.EmailBackend'
+    DJMAIL_REAL_BACKEND = 'postmark.django_backend.EmailBackend'
