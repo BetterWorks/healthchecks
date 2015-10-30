@@ -1,2 +1,3 @@
-web: ./web.sh
-sendalerts: NEW_RELIC_APP_NAME="sendalerts" newrelic-admin run-program ./manage.py sendalerts
+web: honcho -f Procfile start www sendalerts
+sendalerts: ./manage.py sendalerts
+www: ./web.sh

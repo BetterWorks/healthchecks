@@ -119,6 +119,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
 SITE_ROOT = os.environ.get("SITE_ROOT", "http://localhost:8000")
 PING_ENDPOINT = SITE_ROOT + "/ping/"
 PING_EMAIL_DOMAIN = HOST

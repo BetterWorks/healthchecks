@@ -10,6 +10,10 @@ class Command(BaseCommand):
     help = 'Prune pings older than one week'
 
     def handle(self, *args, **options):
+        (Check.objects
+            .filter(user=None, created__lt=timezone.now() - timedelta(hours=2))
+            .delete())
+
         for check in Check.objects.iterator():
             pings = Ping.objects.filter(owner=check)
             if pings.count() > 20:
