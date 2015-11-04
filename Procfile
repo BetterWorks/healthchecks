@@ -1,3 +1,3 @@
 web: honcho -f Procfile start www sendalerts
-sendalerts: ./manage.py sendalerts
-www: ./web.sh
+sendalerts: bin/start-pgbouncer-stunnel ./manage.py sendalerts
+www: bin/start-pgbouncer-stunnel ./web.sh
