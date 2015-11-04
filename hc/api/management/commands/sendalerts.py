@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
+
 from hc.api.models import Check
 
 executor = ThreadPoolExecutor(max_workers=10)
