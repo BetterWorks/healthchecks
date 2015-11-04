@@ -23,7 +23,7 @@ class ChecksAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-         'all': ('css/admin/checks.css',)
+            'all': ('css/admin/checks.css',)
         }
 
     search_fields = ["name", "user__email"]
@@ -32,7 +32,6 @@ class ChecksAdmin(admin.ModelAdmin):
     list_select_related = ("user", )
     list_filter = ("status", OwnershipListFilter, "last_ping")
     actions = ["send_alert"]
-
 
     def email(self, obj):
         return obj.user.email if obj.user else None
