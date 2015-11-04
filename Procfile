@@ -1,3 +1,3 @@
-web: PYTHONIOENCODING="utf-8" honcho -f Procfile start www sendalerts
-sendalerts: bin/start-pgbouncer-stunnel ./manage.py sendalerts
-www: bin/start-pgbouncer-stunnel ./web.sh
+web: PYTHONIOENCODING="utf-8" ./bin/start-pgbouncer-stunnel honcho -f Procfile start www sendalerts
+sendalerts: ./manage.py sendalerts
+www: ./web.sh
