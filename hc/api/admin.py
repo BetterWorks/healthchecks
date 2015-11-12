@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.core.paginator import Paginator
+from django.db import connection
 
 from hc.api.models import Channel, Check, Notification, Ping
 
@@ -45,13 +47,83 @@ class ChecksAdmin(admin.ModelAdmin):
     send_alert.short_description = "Send Alert"
 
 
+class SchemeListFilter(admin.SimpleListFilter):
+    title = "Scheme"
+    parameter_name = 'scheme'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('http', "HTTP"),
+            ('https', "HTTPS"),
+            ('email', "Email"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(scheme=self.value())
+        return queryset
+
+
+class MethodListFilter(admin.SimpleListFilter):
+    title = "Method"
+    parameter_name = 'method'
+    methods = ["HEAD", "GET", "POST", "PUT", "DELETE"]
+
+    def lookups(self, request, model_admin):
+        return zip(self.methods, self.methods)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(method=self.value())
+        return queryset
+
+
+# Adapted from: https://djangosnippets.org/snippets/2593/
+class LargeTablePaginator(Paginator):
+    """ Overrides the count method to get an estimate instead of actual count
+    when not filtered
+    """
+
+    def _get_estimate(self):
+        try:
+            cursor = connection.cursor()
+            cursor.execute("SELECT reltuples FROM pg_class WHERE relname = %s",
+                           [self.object_list.query.model._meta.db_table])
+            return int(cursor.fetchone()[0])
+        except:
+            return 0
+
+    def _get_count(self):
+        """
+        Changed to use an estimate if the estimate is greater than 10,000
+        Returns the total number of objects, across all pages.
+        """
+        if self._count is None:
+            try:
+                estimate = 0
+                if not self.object_list.query.where:
+                    estimate = self._get_estimate()
+                if estimate < 10000:
+                    self._count = self.object_list.count()
+                else:
+                    self._count = estimate
+            except (AttributeError, TypeError):
+                # AttributeError if object_list has no count() method.
+                # TypeError if object_list.count() requires arguments
+                # (i.e. is of type list).
+                self._count = len(self.object_list)
+        return self._count
+    count = property(_get_count)
+
+
 @admin.register(Ping)
 class PingsAdmin(admin.ModelAdmin):
     search_fields = ("owner__name", "owner__code", "owner__user__email")
     list_select_related = ("owner", "owner__user")
     list_display = ("id", "created", "check_name", "email", "scheme", "method",
                     "ua")
-    list_filter = ("created", "scheme", "method")
+    list_filter = ("created", SchemeListFilter, MethodListFilter)
+    paginator = LargeTablePaginator
 
     def check_name(self, obj):
         return obj.owner.name if obj.owner.name else obj.owner.code
