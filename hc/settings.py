@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOST = os.environ.get("HOST", "localhost")
 SECRET_KEY = os.environ.get("SECRET_KEY", "---")
-DEBUG = not os.environ.get("DEBUG", "t").lower().startswith("f")
+DEBUG = os.environ.get("DEBUG", "t").lower().startswith("t")
 ALLOWED_HOSTS = [HOST]
 ALLOWED_DOMAIN = os.environ.get("ALLOWED_DOMAIN")
 DEFAULT_FROM_EMAIL = os.environ.get(
