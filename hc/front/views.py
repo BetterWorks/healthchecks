@@ -29,7 +29,8 @@ def index(request):
         return redirect("hc-checks")
 
     if "welcome_code" in request.session:
-        check = Check.objects.first(code=request.session["welcome_code"])
+        code = request.session["welcome_code"]
+        check = Check.objects.filter(code=code).first()
 
     if check is None:
         check = Check()
