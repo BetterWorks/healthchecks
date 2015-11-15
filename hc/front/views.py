@@ -28,14 +28,14 @@ def index(request):
     if request.user.is_authenticated():
         return redirect("hc-checks")
 
-    if "welcome_code" not in request.session:
+    if "welcome_code" in request.session:
+        check = Check.objects.first(code=request.session["welcome_code"])
+
+    if check is None:
         check = Check()
         check.save()
         code = str(check.code)
         request.session["welcome_code"] = code
-    else:
-        code = request.session["welcome_code"]
-        check = Check.objects.get(code=code)
 
     ctx = {
         "page": "welcome",
