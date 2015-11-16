@@ -132,7 +132,9 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-COMPRESS_OFFLINE = False
+
+COMPRESS_ENABLED = False
+COMPRESS_OFFLINE = True
 
 EMAIL_BACKEND = "djmail.backends.async.EmailBackend"
 if 'POSTMARK_API_KEY' in os.environ:
