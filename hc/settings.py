@@ -134,7 +134,7 @@ STATICFILES_FINDERS = (
 )
 
 COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
+COMPRESS_OFFLINE = False
 
 EMAIL_BACKEND = "djmail.backends.async.EmailBackend"
 if 'POSTMARK_API_KEY' in os.environ:
