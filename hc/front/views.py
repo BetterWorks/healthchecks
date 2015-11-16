@@ -28,6 +28,7 @@ def index(request):
     if request.user.is_authenticated():
         return redirect("hc-checks")
 
+    check = None
     if "welcome_code" in request.session:
         code = request.session["welcome_code"]
         check = Check.objects.filter(code=code).first()
