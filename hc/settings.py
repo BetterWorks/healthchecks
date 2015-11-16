@@ -133,7 +133,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_ENABLED = False
+COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 
 EMAIL_BACKEND = "djmail.backends.async.EmailBackend"
