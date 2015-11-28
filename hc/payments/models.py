@@ -1,7 +1,6 @@
+import braintree
 from django.contrib.auth.models import User
 from django.db import models
-
-import braintree
 
 
 class Subscription(models.Model):

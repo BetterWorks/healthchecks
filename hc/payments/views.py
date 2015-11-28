@@ -1,9 +1,8 @@
+import braintree
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
-
-import braintree
 
 from .models import Subscription
 

@@ -14,7 +14,6 @@ from hc.api.models import Check
 executor = ThreadPoolExecutor(max_workers=10)
 logger = logging.getLogger(__name__)
 
-
 def _stdout(message):
     sys.stdout.write(message)
     sys.stdout.flush()
@@ -73,8 +72,6 @@ class Command(BaseCommand):
     help = 'Sends UP/DOWN email alerts'
 
     def handle(self, *args, **options):
-        agent.initialize()
-        agent.register_application(name='sendalerts')
         while True:
             handle_many()
             time.sleep(30)
