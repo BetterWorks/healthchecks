@@ -14,9 +14,11 @@ from hc.api.models import Check
 executor = ThreadPoolExecutor(max_workers=10)
 logger = logging.getLogger(__name__)
 
+
 def _stdout(message):
     sys.stdout.write(message)
     sys.stdout.flush()
+
 
 @agent.background_task()
 def handle_many():
@@ -35,6 +37,7 @@ def handle_many():
         future.result()
 
     return True
+
 
 @agent.background_task()
 def handle_one(check):
