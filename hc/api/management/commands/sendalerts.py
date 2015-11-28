@@ -73,6 +73,8 @@ class Command(BaseCommand):
     help = 'Sends UP/DOWN email alerts'
 
     def handle(self, *args, **options):
+        agent.initialize()
+        agent.register_application(name='sendalerts')
         while True:
             handle_many()
             time.sleep(30)
