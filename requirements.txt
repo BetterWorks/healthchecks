@@ -1,3 +1,4 @@
+braintree==3.22.0
 dj-database-url
 dj-static==0.0.6
 django-appconf==1.0.1

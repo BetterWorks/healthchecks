@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
+from newrelic import agent
 
 from hc.api.models import Check
 
@@ -58,6 +59,7 @@ def handle_one(check):
         # - sendalerts will try same thing again, resulting in infinite loop
         # So instead we catch and log all exceptions, and mark
         # the checks as paused so they are not retried.
+        agent.record_exception()
         logger.error("Could not alert %s" % check.code, exc_info=True)
         check.status = "paused"
     finally:
