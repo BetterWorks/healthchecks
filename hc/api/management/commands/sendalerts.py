@@ -19,7 +19,7 @@ def _stdout(message):
     sys.stdout.write(message)
     sys.stdout.flush()
 
-
+@agent.background_task()
 def handle_many():
     """ Send alerts for many checks simultaneously. """
     query = Check.objects.filter(user__isnull=False)
@@ -37,7 +37,7 @@ def handle_many():
 
     return True
 
-
+@agent.background_task()
 def handle_one(check):
     """ Send an alert for a single check.
 
