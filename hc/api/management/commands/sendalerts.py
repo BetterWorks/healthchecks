@@ -14,6 +14,9 @@ from hc.api.models import Check
 executor = ThreadPoolExecutor(max_workers=10)
 logger = logging.getLogger(__name__)
 
+agent.initialize()
+agent.register_application()
+
 
 def _stdout(message):
     sys.stdout.write(message)
