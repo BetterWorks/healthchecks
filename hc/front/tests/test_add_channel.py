@@ -1,19 +1,21 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from hc.api.models import Channel
 
 
+@override_settings(
+    PUSHOVER_API_TOKEN='bogus_token',
+    PUSHOVER_SUBSCRIPTION_URL='bogus_url',
+    SESSION_ENGINE='django.contrib.sessions.backends.db')
 class AddChannelTestCase(TestCase):
 
     def setUp(self):
+        super(AddChannelTestCase, self).setUp()
         self.alice = User(username="alice")
         self.alice.set_password("password")
         self.alice.save()
-
-        settings.PUSHOVER_API_TOKEN = "bogus_token"
-        settings.PUSHOVER_SUBSCRIPTION_URL = "bogus_url"
 
     def test_it_works(self):
         url = "/integrations/add/"
