@@ -25,7 +25,15 @@ DEFAULT_TIMEOUT = td(days=1)
 DEFAULT_GRACE = td(hours=1)
 CHANNEL_KINDS = (("email", "Email"), ("webhook", "Webhook"),
                  ("hipchat", "HipChat"),
-                 ("slack", "Slack"), ("pd", "PagerDuty"))
+                 ("slack", "Slack"), ("pd", "PagerDuty"), ("po", "Pushover"))
+
+PO_PRIORITIES = {
+    -2: "lowest",
+    -1: "low",
+    0: "normal",
+    1: "high",
+    2: "emergency"
+}
 
 
 class Check(models.Model):
@@ -183,6 +191,44 @@ class Channel(models.Model):
 
             n.status = r.status_code
             n.save()
+
+        elif self.kind == "po":
+            tmpl = "integrations/pushover_message.html"
+            ctx = {
+                "check": check,
+                "down_checks":  self.user.check_set.filter(status="down").exclude(code=check.code).order_by("created"),
+            }
+            text = render_to_string(tmpl, ctx).strip()
+            if check.status == "down":
+                title = "%s is DOWN" % check.name_then_code()
+            else:
+                title = "%s is now UP" % check.name_then_code()
+
+            user_key, priority, _ = self.po_value
+            payload = {
+                "token": settings.PUSHOVER_API_TOKEN,
+                "user": user_key,
+                "message": text,
+                "title": title,
+                "html": 1,
+                "priority": priority,
+            }
+            if priority == 2:  # Emergency notification
+                payload["retry"] = settings.PUSHOVER_EMERGENCY_RETRY_DELAY
+                payload["expire"] = settings.PUSHOVER_EMERGENCY_EXPIRATION
+
+            url = "https://api.pushover.net/1/messages.json"
+            r = requests.post(url, data=payload, timeout=5)
+
+            n.status = r.status_code
+            n.save()
+
+    @property
+    def po_value(self):
+        assert self.kind == "po"
+        user_key, prio = self.value.split("|")
+        prio = int(prio)
+        return user_key, prio, PO_PRIORITIES[prio]
 
 
 class Notification(models.Model):
