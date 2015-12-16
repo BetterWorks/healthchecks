@@ -1,12 +1,14 @@
+import uuid
 from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import signing
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
+
 from hc.lib import emails
-import uuid
 
 
 class ProfileManager(models.Manager):
