@@ -30,7 +30,6 @@ def ping(request, code):
     ping.method = headers["REQUEST_METHOD"]
     # If User-Agent is longer than 200 characters, truncate it:
     ping.ua = headers.get("HTTP_USER_AGENT", "")[:200]
-    ping.body = request.body
     ping.save()
 
     response = HttpResponse("OK")
@@ -62,7 +61,6 @@ def handle_email(request):
 
             ping = Ping(owner=check)
             ping.scheme = "email"
-            ping.body = event["msg"]["raw_msg"]
             ping.save()
 
     response = HttpResponse("OK")

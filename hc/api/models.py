@@ -43,6 +43,7 @@ class Check(models.Model):
         index_together = ["status", "user", "alert_after"]
 
     name = models.CharField(max_length=100, blank=True)
+    tags = models.CharField(max_length=500, blank=True)
     code = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
     user = models.ForeignKey(User, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -90,6 +91,9 @@ class Check(models.Model):
             channels = Channel.objects.filter(user=self.user)
             self.channel_set.add(*channels)
 
+    def tags_list(self):
+        return self.tags.split(" ")
+
 
 class Ping(models.Model):
     owner = models.ForeignKey(Check)
@@ -98,7 +102,6 @@ class Ping(models.Model):
     remote_addr = models.GenericIPAddressField(blank=True, null=True)
     method = models.CharField(max_length=10, blank=True)
     ua = models.CharField(max_length=200, blank=True)
-    body = models.TextField(blank=True)
 
 
 class Channel(models.Model):
