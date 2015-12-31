@@ -7,7 +7,7 @@ Django==1.9
 django_compressor==1.6
 djmail==0.11.0
 futures==3.0.3
-gunicorn==19.4.1
+gunicorn==19.4.3
 honcho
 ipython==4.0.1
 isort
@@ -17,4 +17,4 @@ premailer==2.9.6
 psycopg2==2.6.1
 Pygments==2.0.2
 python-postmark
-requests==2.9.0
+requests==2.9.1
