@@ -8,6 +8,7 @@ from hc.payments.models import Subscription
 class GetClientTokenTestCase(TestCase):
 
     def setUp(self):
+        super(GetClientTokenTestCase, self).setUp()
         self.alice = User(username="alice", email="alice@example.org")
         self.alice.set_password("password")
         self.alice.save()

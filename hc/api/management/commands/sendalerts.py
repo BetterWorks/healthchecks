@@ -79,5 +79,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         while True:
+            _stdout("Checking alerts")
             handle_many()
+            _stdout("Done checking alerts")
             time.sleep(30)
