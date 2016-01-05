@@ -45,7 +45,10 @@ class Command(BaseCommand):
         counts = Counter()
 
         pk = 0
-        last_pk = Ping.objects.order_by('-pk')[0].pk
+        if Ping.objects.count() == 0:
+            last_pk = 0
+        else:
+            last_pk = Ping.objects.order_by('-pk')[0].pk
         queryset = Ping.objects.order_by('pk')
 
         transaction.set_autocommit(False)
