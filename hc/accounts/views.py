@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -11,11 +12,9 @@ from django.core import signing
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
 
-from hc.accounts.forms import (EmailPasswordForm, ReportSettingsForm,
-                               SetPasswordForm)
+from hc.accounts.forms import EmailPasswordForm, ReportSettingsForm, SetPasswordForm
 from hc.accounts.models import Profile
 from hc.api.models import Channel, Check
-from django.conf import settings
 
 
 def _make_user(email):

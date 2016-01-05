@@ -1,13 +1,9 @@
 import braintree
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
-from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
-                         JsonResponse)
-
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
-from hc.accounts.models import Profile
 
 from hc.accounts.models import Profile
 

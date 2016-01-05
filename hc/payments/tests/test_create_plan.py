@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
+from mock import patch
+
 from hc.accounts.models import Profile
 from hc.payments.models import Subscription
-from mock import patch
 
 
 class CreatePlanTestCase(TestCase):

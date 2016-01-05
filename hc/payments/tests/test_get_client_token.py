@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from hc.payments.models import Subscription
 from mock import patch
+
+from hc.payments.models import Subscription
 
 
 class GetClientTokenTestCase(TestCase):

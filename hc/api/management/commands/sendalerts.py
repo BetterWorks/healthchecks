@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 
 from concurrent.futures import ThreadPoolExecutor
@@ -6,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.utils import timezone
 from newrelic import agent
-import sys
+
 from hc.api.models import Check
 
 executor = ThreadPoolExecutor(max_workers=10)

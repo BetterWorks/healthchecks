@@ -1,6 +1,7 @@
-from django.db.models import F
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.db.models import F
+
 from hc.accounts.models import Profile
 from hc.api.models import Check, Ping
 
