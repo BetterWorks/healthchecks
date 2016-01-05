@@ -1,5 +1,6 @@
 from collections import Counter
 from datetime import timedelta as td
+from itertools import tee
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,14 @@ from hc.accounts.models import Profile
 from hc.api.decorators import uuid_or_400
 from hc.api.models import Channel, Check, Ping
 from hc.front.forms import AddChannelForm, NameTagsForm, TimeoutForm
+
+
+# from itertools recipes:
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
 
 
 @login_required
@@ -186,30 +195,37 @@ def log(request, code):
 
     profile = Profile.objects.for_user(request.user)
     limit = profile.ping_log_limit
-    pings = Ping.objects.filter(owner=check).order_by("-created")[:limit]
+    pings = Ping.objects.filter(owner=check).order_by("-id")[:limit]
+
+    pings = list(pings)
+    # oldest-to-newest order will be more convenient for adding
+    # "not received" placeholders:
+    pings.reverse()
+
+    # Add a dummy ping object at the end. We iterate over *pairs* of pings
+    # and don't want to handle a special case of a check with a single ping.
+    pings.append(Ping(created=timezone.now()))
 
     # Now go through pings, calculate time gaps, and decorate
     # the pings list for convenient use in template
     wrapped = []
-    now = timezone.now()
-    for i, ping in enumerate(pings):
-        prev = now if i == 0 else pings[i - 1].created
 
-        duration = prev - ping.created
-        if duration > check.timeout:
-            downtime = {"prev_date": prev, "date": ping.created}
-            if i > 0:
-                wrapped[-1]["status"] = "late"
+    early = False
+    for older, newer in pairwise(pings):
+        wrapped.append({"ping": older, "early": early})
 
-            if duration > check.timeout + check.grace:
-                downtime["down"] = True
-                if i > 0:
-                    wrapped[-1]["status"] = "down"
+        # Fill in "missed ping" placeholders:
+        expected_date = older.created + check.timeout
+        limit = 0
+        while expected_date + check.grace < newer.created and limit < 10:
+            wrapped.append({"placeholder_date": expected_date})
+            expected_date = expected_date + check.timeout
+            limit += 1
 
-            wrapped.append(downtime)
+        # Prepare early flag for next ping to come
+        early = older.created + check.timeout > newer.created + check.grace
 
-        wrapped.append({"ping": ping})
-
+    wrapped.reverse()
     ctx = {
         "check": check,
         "pings": wrapped
@@ -356,7 +372,8 @@ def add_hipchat(request):
 
 @login_required
 def add_pushover(request):
-    if settings.PUSHOVER_API_TOKEN is None or settings.PUSHOVER_SUBSCRIPTION_URL is None:
+    if settings.PUSHOVER_API_TOKEN is None or \
+            settings.PUSHOVER_SUBSCRIPTION_URL is None:
         return HttpResponseForbidden()
 
     if request.method == "POST":
@@ -365,14 +382,16 @@ def add_pushover(request):
         request.session["po_nonce"] = nonce
 
         failure_url = settings.SITE_ROOT + reverse("hc-channels")
-        success_url = settings.SITE_ROOT + reverse("hc-add-pushover") + "?" + urlencode({
-            "nonce": nonce,
-            "prio": request.POST.get("po_priority", "0"),
-        })
-        subscription_url = settings.PUSHOVER_SUBSCRIPTION_URL + "?" + urlencode({
-            "success": success_url,
-            "failure": failure_url,
-        })
+        success_url = settings.SITE_ROOT + reverse("hc-add-pushover") + "?" + \
+            urlencode({
+                "nonce": nonce,
+                "prio": request.POST.get("po_priority", "0"),
+            })
+        subscription_url = settings.PUSHOVER_SUBSCRIPTION_URL + "?" + \
+            urlencode({
+                "success": success_url,
+                "failure": failure_url,
+            })
 
         return redirect(subscription_url)
 

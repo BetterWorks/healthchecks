@@ -7,7 +7,7 @@ from hc.api.models import Channel, Check
 class UpdateChannelTestCase(TestCase):
 
     def setUp(self):
-        self.alice = User(username="alice")
+        self.alice = User(username="alice", email="alice@example.org")
         self.alice.set_password("password")
         self.alice.save()
 
@@ -24,9 +24,9 @@ class UpdateChannelTestCase(TestCase):
             "check-%s" % self.check.code: True
         }
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post("/integrations/", data=payload)
-        assert r.status_code == 302
+        self.assertRedirects(r, "/integrations/")
 
         channel = Channel.objects.get(code=self.channel.code)
         checks = channel.checks.all()
@@ -34,20 +34,20 @@ class UpdateChannelTestCase(TestCase):
         assert checks[0].code == self.check.code
 
     def test_it_checks_channel_user(self):
-        mallory = User(username="mallory")
+        mallory = User(username="mallory", email="mallory@example.org")
         mallory.set_password("password")
         mallory.save()
 
         payload = {"channel": self.channel.code}
 
-        self.client.login(username="mallory", password="password")
+        self.client.login(username="mallory@example.org", password="password")
         r = self.client.post("/integrations/", data=payload)
 
         # self.channel does not belong to mallory, this should fail--
         assert r.status_code == 403
 
     def test_it_checks_check_user(self):
-        mallory = User(username="mallory")
+        mallory = User(username="mallory", email="mallory@example.org")
         mallory.set_password("password")
         mallory.save()
 
@@ -59,7 +59,7 @@ class UpdateChannelTestCase(TestCase):
             "channel": mc.code,
             "check-%s" % self.check.code: True
         }
-        self.client.login(username="mallory", password="password")
+        self.client.login(username="mallory@example.org", password="password")
         r = self.client.post("/integrations/", data=payload)
 
         # mc belongs to mallorym but self.check does not--
@@ -69,7 +69,7 @@ class UpdateChannelTestCase(TestCase):
         # Correct UUID but there is no channel for it:
         payload = {"channel": "6837d6ec-fc08-4da5-a67f-08a9ed1ccf62"}
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post("/integrations/", data=payload)
         assert r.status_code == 400
 
@@ -80,6 +80,6 @@ class UpdateChannelTestCase(TestCase):
             "check-6837d6ec-fc08-4da5-a67f-08a9ed1ccf62": True
         }
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post("/integrations/", data=payload)
         assert r.status_code == 400

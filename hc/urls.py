@@ -8,10 +8,10 @@ urlpatterns = [
     url(r'^accounts/', include('hc.accounts.urls')),
     url(r'^',          include('hc.api.urls')),
     url(r'^',          include('hc.front.urls')),
-
+    url(r'^',          include('hc.payments.urls'))
 ]
-
-urlpatterns += staticfiles_urlpatterns()
 
 if settings.USE_PAYMENTS:
     urlpatterns.append(url(r'^', include('hc.payments.urls')))
+
+urlpatterns += staticfiles_urlpatterns()

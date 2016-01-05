@@ -7,7 +7,7 @@ from hc.api.models import Check
 class UpdateNameTestCase(TestCase):
 
     def setUp(self):
-        self.alice = User(username="alice")
+        self.alice = User(username="alice", email="alice@example.org")
         self.alice.set_password("password")
         self.alice.save()
 
@@ -18,23 +18,23 @@ class UpdateNameTestCase(TestCase):
         url = "/checks/%s/name/" % self.check.code
         payload = {"name": "Alice Was Here"}
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post(url, data=payload)
-        assert r.status_code == 302
+        self.assertRedirects(r, "/checks/")
 
         check = Check.objects.get(code=self.check.code)
         assert check.name == "Alice Was Here"
 
     def test_it_checks_ownership(self):
 
-        charlie = User(username="charlie")
+        charlie = User(username="charlie", email="charlie@example.org")
         charlie.set_password("password")
         charlie.save()
 
         url = "/checks/%s/name/" % self.check.code
         payload = {"name": "Charlie Sent This"}
 
-        self.client.login(username="charlie", password="password")
+        self.client.login(username="charlie@example.org", password="password")
         r = self.client.post(url, data=payload)
         assert r.status_code == 403
 
@@ -42,7 +42,7 @@ class UpdateNameTestCase(TestCase):
         url = "/checks/not-uuid/name/"
         payload = {"name": "Alice Was Here"}
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post(url, data=payload)
         assert r.status_code == 400
 
@@ -51,7 +51,7 @@ class UpdateNameTestCase(TestCase):
         url = "/checks/6837d6ec-fc08-4da5-a67f-08a9ed1ccf62/name/"
         payload = {"name": "Alice Was Here"}
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post(url, data=payload)
         assert r.status_code == 404
 
@@ -59,7 +59,7 @@ class UpdateNameTestCase(TestCase):
         url = "/checks/%s/name/" % self.check.code
         payload = {"tags": "  foo  bar\r\t \n  baz \n"}
 
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         self.client.post(url, data=payload)
 
         check = Check.objects.get(id=self.check.id)

@@ -37,7 +37,8 @@ INSTALLED_APPS = (
 
     'hc.accounts',
     'hc.api',
-    'hc.front'
+    'hc.front',
+    'hc.payments'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -50,6 +51,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware'
+)
+
+AUTHENTICATION_BACKENDS = (
+    'hc.accounts.backends.EmailBackend',
+    'hc.accounts.backends.ProfileBackend'
 )
 
 ROOT_URLCONF = 'hc.urls'
@@ -72,6 +78,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'hc.wsgi.application'
+TEST_RUNNER = 'hc.api.tests.CustomRunner'
+
 
 # Default database engine is SQLite. So one can just check out code,
 # install requirements.txt and do manage.py runserver and it works

@@ -124,6 +124,7 @@ class Check(models.Model):
 
 
 class Ping(models.Model):
+    n = models.IntegerField(null=True)
     owner = models.ForeignKey(Check)
     created = models.DateTimeField(auto_now_add=True)
     scheme = models.CharField(max_length=10, default="http")

@@ -7,13 +7,13 @@ from hc.api.models import Check
 class AddCheckTestCase(TestCase):
 
     def setUp(self):
-        self.alice = User(username="alice")
+        self.alice = User(username="alice", email="alice@example.org")
         self.alice.set_password("password")
         self.alice.save()
 
     def test_it_works(self):
         url = "/checks/add/"
-        self.client.login(username="alice", password="password")
+        self.client.login(username="alice@example.org", password="password")
         r = self.client.post(url)
-        assert r.status_code == 302
+        self.assertRedirects(r, "/checks/")
         assert Check.objects.count() == 1

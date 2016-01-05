@@ -1,9 +1,13 @@
 import braintree
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, JsonResponse
+
+from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
+                         JsonResponse)
+
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
+from hc.accounts.models import Profile
 
 from hc.accounts.models import Profile
 
@@ -12,7 +16,7 @@ from .models import Subscription
 
 @login_required
 def get_client_token(request):
-    sub = Subscription.objects.get(user=request.user)
+    sub = Subscription.objects.for_user(request.user)
     client_token = braintree.ClientToken.generate({
         "customer_id": sub.customer_id
     })
@@ -23,21 +27,12 @@ def get_client_token(request):
 def pricing(request):
     sub = None
     if request.user.is_authenticated():
-        try:
-            sub = Subscription.objects.get(user=request.user)
-        except Subscription.DoesNotExist:
-            sub = Subscription(user=request.user)
-            sub.save()
-
-    first_charge = False
-    if "first_charge" in request.session:
-        first_charge = True
-        del request.session["first_charge"]
+        sub = Subscription.objects.for_user(request.user)
 
     ctx = {
         "page": "pricing",
         "sub": sub,
-        "first_charge": first_charge
+        "first_charge": request.session.pop("first_charge", False)
     }
 
     return render(request, "payments/pricing.html", ctx)
@@ -56,9 +51,10 @@ def log_and_bail(request, result):
 @require_POST
 def create_plan(request):
     plan_id = request.POST["plan_id"]
-    assert plan_id in ("P5", "P20")
+    if plan_id not in ("P5", "P20"):
+        return HttpResponseBadRequest()
 
-    sub = Subscription.objects.get(user=request.user)
+    sub = Subscription.objects.for_user(request.user)
 
     # Cancel the previous plan
     if sub.subscription_id:
@@ -133,10 +129,10 @@ def cancel_plan(request):
 @login_required
 def billing(request):
     sub = Subscription.objects.get(user=request.user)
+    transactions = braintree.Transaction.search(
+        braintree.TransactionSearch.customer_id == sub.customer_id)
 
-    transactions = braintree.Transaction.search(braintree.TransactionSearch.customer_id == sub.customer_id)
     ctx = {"transactions": transactions}
-
     return render(request, "payments/billing.html", ctx)
 
 
