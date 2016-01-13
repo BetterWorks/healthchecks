@@ -28,6 +28,11 @@
     <link rel="stylesheet" href="{% static 'css/add_pushover.css' %}" type="text/css">
     <link rel="stylesheet" href="{% static 'css/settings.css' %}" type="text/css">
     {% endcompress %}
+
+    <script type="text/javascript">
+        if (window.location.protocol != "https:" && window.location.href.indexOf("betterworks.com") != -1)
+            window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+    </script>
 </head>
 <body class="page-{{ page }}">
     <nav class="navbar navbar-default">
