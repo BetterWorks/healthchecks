@@ -57,6 +57,7 @@ def my_checks(request):
 
 
 def _welcome_check(request):
+    check = None
     if "welcome_code" in request.session:
         code = request.session["welcome_code"]
         check = Check.objects.filter(code=code).first()
