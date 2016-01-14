@@ -19,6 +19,7 @@ agent.register_application()
 
 def _stdout(message):
     sys.stdout.write(message)
+    sys.stdout.write('\n')
     sys.stdout.flush()
 
 
