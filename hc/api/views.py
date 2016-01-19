@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models import F
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 
 from hc.api.decorators import uuid_or_400
@@ -12,6 +13,7 @@ from hc.api.models import Check, Ping
 
 @csrf_exempt
 @uuid_or_400
+@never_cache
 def ping(request, code):
     try:
         check = Check.objects.get(code=code)
@@ -29,10 +31,12 @@ def ping(request, code):
     ping = Ping(owner=check)
     headers = request.META
     ping.n = check.n_pings
-    remote_addr = headers.get("HTTP_X_FORWARDED_FOR",
-        headers.get("HTTP_X_REAL_IP", headers["REMOTE_ADDR"])).split(',')[0]
+    forward = headers.get("HTTP_X_FORWARDED_FOR")
+    real_ip = headers.get("HTTP_X_REAL_IP")
+    remote_addr = (forward or real_ip or headers["REMOTE_ADDR"]).split(",")[0]
     ping.remote_addr = remote_addr
-    ping.scheme = headers.get("HTTP_X_FORWARDED_PROTO", headers.get("HTTP_X_SCHEME", "http"))
+    forward_proto = headers.get("HTTP_X_FORWARDED_PROTO")
+    ping.scheme = forward_proto or headers.get("HTTP_X_SCHEME", "http")
     ping.method = headers["REQUEST_METHOD"]
     # If User-Agent is longer than 200 characters, truncate it:
     ping.ua = headers.get("HTTP_USER_AGENT", "")[:200]
