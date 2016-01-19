@@ -179,7 +179,7 @@ class Channel(models.Model):
             text = render_to_string(tmpl, {"check": check})
             payload = {
                 "text": text,
-                "username": "healthchecks.io",
+                "username": settings.HOST,
                 "icon_url": "https://healthchecks.io/static/img/logo@2x.png"
             }
 
