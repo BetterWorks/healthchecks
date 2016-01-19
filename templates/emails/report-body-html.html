@@ -94,7 +94,11 @@ Get the ball rolling by adding one more!</p>
 <p>
     --<br />
     Regards,<br />
-    healthchecks.io
+    {% if host %}
+        {{ host }}
+    {% else %}
+        healthchecks.io
+    {% endif %}
 </p>
 
 <p>
