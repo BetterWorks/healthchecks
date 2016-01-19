@@ -29,8 +29,10 @@ def ping(request, code):
     ping = Ping(owner=check)
     headers = request.META
     ping.n = check.n_pings
-    ping.remote_addr = headers.get("HTTP_X_REAL_IP", headers["REMOTE_ADDR"])
-    ping.scheme = headers.get("HTTP_X_SCHEME", "http")
+    remote_addr = headers.get("HTTP_X_FORWARDED_FOR",
+        headers.get("HTTP_X_REAL_IP", headers["REMOTE_ADDR"])).split(',')[0]
+    ping.remote_addr = remote_addr
+    ping.scheme = headers.get("HTTP_X_FORWARDED_PROTO", headers.get("HTTP_X_SCHEME", "http"))
     ping.method = headers["REQUEST_METHOD"]
     # If User-Agent is longer than 200 characters, truncate it:
     ping.ua = headers.get("HTTP_USER_AGENT", "")[:200]
