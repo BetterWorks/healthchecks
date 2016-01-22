@@ -7,5 +7,9 @@ please click the link below:</p>
 <p>
     --<br />
     Regards,<br />
-    healthchecks.io
+    {% if host %}
+        {{ host }}
+    {% else %}
+        healthchecks.io
+    {% endif %}
 </p>

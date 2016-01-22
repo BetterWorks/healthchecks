@@ -92,7 +92,6 @@ DATABASES = {
 
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config()
-    DATABASES['default']['CONN_MAX_AGE'] = 60
 
 # You can switch database engine to postgres or mysql using environment
 # variable 'DB'. Travis CI does this.
