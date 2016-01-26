@@ -93,7 +93,7 @@ class Check(models.Model):
             self.channel_set.add(*channels)
 
     def tags_list(self):
-        return self.tags.split(" ")
+        return [t.strip() for t in self.tags.split(" ") if t.strip()]
 
     def prune_pings(self, keep_limit):
         """ Prune pings for this check.
@@ -176,14 +176,10 @@ class Channel(models.Model):
 
             n.save()
         elif self.kind == "slack":
-            tmpl = "integrations/slack_message.html"
-            text = render_to_string(tmpl, {"check": check})
-            payload = {
-                "text": text,
-                "username": settings.HOST,
-                "icon_url": "https://healthchecks.io/static/img/logo@2x.png"
-            }
-
+            tmpl = "integrations/slack_message.json"
+            ctx = {"check": check, "username": settings.HOST}
+            text = render_to_string(tmpl, ctx)
+            payload = json.loads(text)
             r = requests.post(self.value, json=payload, timeout=5)
 
             n.status = r.status_code
