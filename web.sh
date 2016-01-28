@@ -6,4 +6,4 @@ newrelic-admin run-program gunicorn hc.wsgi \
   --max-requests-jitter 50 \
   --preload \
   --timeout 20 \
-  --workers 4
+  --workers 8
