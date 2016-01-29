@@ -67,7 +67,7 @@ def handle_one(check):
         # the checks as paused so they are not retried.
         agent.record_exception()
         logger.error("Could not alert %s" % check.code, exc_info=True)
-        check.status = "paused"
+        # check.status = "paused"
     finally:
         check.save()
         connection.close()
