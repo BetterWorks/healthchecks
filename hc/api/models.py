@@ -168,7 +168,7 @@ class Channel(models.Model):
         elif self.kind == "webhook" and check.status == "down":
             try:
                 headers = {"User-Agent": "healthchecks.io"}
-                r = requests.get(self.value, timeout=5, headers=headers)
+                r = requests.get(self.value, timeout=10, headers=headers)
                 n.status = r.status_code
             except requests.exceptions.Timeout:
                 # Well, we tried
@@ -180,7 +180,7 @@ class Channel(models.Model):
             ctx = {"check": check, "username": settings.HOST}
             text = render_to_string(tmpl, ctx)
             payload = json.loads(text)
-            r = requests.post(self.value, json=payload, timeout=5)
+            r = requests.post(self.value, json=payload, timeout=10)
 
             n.status = r.status_code
             n.save()
@@ -192,7 +192,7 @@ class Channel(models.Model):
                 "color": "green" if check.status == "up" else "red",
             }
 
-            r = requests.post(self.value, json=payload, timeout=5)
+            r = requests.post(self.value, json=payload, timeout=10)
 
             n.status = r.status_code
             n.save()
@@ -216,7 +216,7 @@ class Channel(models.Model):
             }
 
             url = "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
-            r = requests.post(url, data=json.dumps(payload), timeout=5)
+            r = requests.post(url, data=json.dumps(payload), timeout=10)
 
             n.status = r.status_code
             n.save()
@@ -247,7 +247,7 @@ class Channel(models.Model):
                 payload["expire"] = settings.PUSHOVER_EMERGENCY_EXPIRATION
 
             url = "https://api.pushover.net/1/messages.json"
-            r = requests.post(url, data=payload, timeout=5)
+            r = requests.post(url, data=payload, timeout=10)
 
             n.status = r.status_code
             n.save()
