@@ -56,21 +56,21 @@ def handle_one(check):
     tmpl = "Sending alert, status=%s, code=%s\n"
     _stdout(tmpl % (check.status, check.code))
 
+    # Save the new status.
+    check.status = check.get_status()
+    check.save()
+
+    tmpl = "\nSending alert, status=%s, code=%s\n"
+    _stdout(tmpl % (check.status, check.code))
     try:
-        check.send_alert()
+        errors = check.send_alert()
     except:
-        # Catch EVERYTHING. If we crash here, what can happen is:
-        # - the sendalerts command will crash
-        # - supervisor will respawn sendalerts command
-        # - sendalerts will try same thing again, resulting in infinite loop
-        # So instead we catch and log all exceptions, and mark
-        # the checks as paused so they are not retried.
         agent.record_exception()
-        logger.error("Could not alert %s" % check.code, exc_info=True)
-        # check.status = "paused"
     finally:
-        check.save()
         connection.close()
+
+    for ch, error in errors:
+        _stdout("ERROR: %s %s %s\n" % (ch.kind, ch.value, error))
 
     return True
 

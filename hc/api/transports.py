@@ -1,0 +1,155 @@
+import json
+
+import requests
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+from hc.lib import emails
+
+
+def tmpl(template_name, **ctx):
+    template_path = "integrations/%s" % template_name
+    return render_to_string(template_path, ctx).strip()
+
+
+class Transport(object):
+    def __init__(self, channel):
+        self.channel = channel
+
+    def notify(self, check):
+        """ Send notification about current status of the check.
+
+        This method returns None on success, and error message
+        on error.
+
+        """
+
+        raise NotImplementedError()
+
+    def test(self):
+        """ Send test message.
+
+        This method returns None on success, and error message
+        on error.
+
+        """
+
+        raise NotImplementedError()
+
+    def checks(self):
+        return self.channel.user.check_set.order_by("created")
+
+
+class Email(Transport):
+    def notify(self, check):
+        if not self.channel.email_verified:
+            return "Email not verified"
+
+        ctx = {
+            "check": check,
+            "checks": self.checks(),
+            "now": timezone.now()
+        }
+        emails.alert(self.channel.value, ctx)
+
+
+class HttpTransport(Transport):
+
+    def request(self, method, url, **kwargs):
+        try:
+            options = dict(kwargs)
+            options["timeout"] = 5
+            options["headers"] = {"User-Agent": "healthchecks.io"}
+            r = requests.request(method, url, **options)
+            if r.status_code not in (200, 201, 204):
+                return "Received status code %d" % r.status_code
+        except requests.exceptions.Timeout:
+            # Well, we tried
+            return "Connection timed out"
+        except requests.exceptions.ConnectionError:
+            return "Connection failed"
+
+    def get(self, url):
+        return self.request("get", url)
+
+    def post(self, url, json):
+        return self.request("post", url, json=json)
+
+    def post_form(self, url, data):
+        return self.request("post", url, data=data)
+
+
+class Webhook(HttpTransport):
+    def notify(self, check):
+        # Webhook integration only fires when check goes down.
+        if check.status != "down":
+            return "no-op"
+
+        return self.get(self.channel.value)
+
+    def test(self):
+        return self.get(self.channel.value)
+
+
+class Slack(HttpTransport):
+    def notify(self, check):
+        text = tmpl("slack_message.json", check=check, username=settings.HOST)
+        payload = json.loads(text)
+        return self.post(self.channel.value, payload)
+
+
+class HipChat(HttpTransport):
+    def notify(self, check):
+        text = tmpl("hipchat_message.html", check=check)
+        payload = {
+            "message": text,
+            "color": "green" if check.status == "up" else "red",
+        }
+        return self.post(self.channel.value, payload)
+
+
+class PagerDuty(HttpTransport):
+    URL = "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
+
+    def notify(self, check):
+        description = tmpl("pd_description.html", check=check)
+        payload = {
+            "service_key": self.channel.value,
+            "incident_key": str(check.code),
+            "event_type": "trigger" if check.status == "down" else "resolve",
+            "description": description,
+            "client": "healthchecks.io",
+            "client_url": settings.SITE_ROOT
+        }
+
+        return self.post(self.URL, payload)
+
+
+class Pushover(HttpTransport):
+    URL = "https://api.pushover.net/1/messages.json"
+
+    def notify(self, check):
+        others = self.checks().filter(status="down").exclude(code=check.code)
+        ctx = {
+            "check": check,
+            "down_checks":  others,
+        }
+        text = tmpl("pushover_message.html", **ctx)
+        title = tmpl("pushover_title.html", **ctx)
+        user_key, prio = self.channel.value.split("|")
+        payload = {
+            "token": settings.PUSHOVER_API_TOKEN,
+            "user": user_key,
+            "message": text,
+            "title": title,
+            "html": 1,
+            "priority": int(prio),
+        }
+
+        # Emergency notification
+        if prio == "2":
+            payload["retry"] = settings.PUSHOVER_EMERGENCY_RETRY_DELAY
+            payload["expire"] = settings.PUSHOVER_EMERGENCY_EXPIRATION
+
+        return self.post_form(self.URL, payload)
