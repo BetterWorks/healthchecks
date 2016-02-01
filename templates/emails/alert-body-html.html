@@ -33,7 +33,13 @@
 </style>
 
 <p>Hello,</p>
-<p>This is a notification sent by <a href="https://healthchecks.io">healthchecks.io</a>.</p>
+<p>This is a notification sent by
+    {% if host %}
+        {{ host }}
+    {% else %}
+        <a href="https://healthchecks.io">healthchecks.io</a>.
+    {% endif %}
+</p>
 <p>The check "{{ check.name_then_code }}" has gone {{ check.status }}.</p>
 <p>Here is a summary of all your checks:</p>
 
