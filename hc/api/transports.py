@@ -153,3 +153,17 @@ class Pushover(HttpTransport):
             payload["expire"] = settings.PUSHOVER_EMERGENCY_EXPIRATION
 
         return self.post_form(self.URL, payload)
+
+
+class VictorOps(HttpTransport):
+    def notify(self, check):
+        description = tmpl("victorops_description.html", check=check)
+        payload = {
+            "entity_id": str(check.code),
+            "message_type": "CRITICAL" if check.status == "down" else "RECOVERY",
+            "entity_display_name": check.name_then_code(),
+            "state_message": description,
+            "monitoring_tool": "healthchecks.io",
+        }
+
+        return self.post(self.channel.value, payload)

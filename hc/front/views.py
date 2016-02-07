@@ -80,7 +80,8 @@ def index(request):
     ctx = {
         "page": "welcome",
         "check": check,
-        "ping_url": check.url()
+        "ping_url": check.url(),
+        "enable_pushover": settings.PUSHOVER_API_TOKEN is not None
     }
 
     return render(request, "front/welcome.html", ctx)
@@ -442,6 +443,11 @@ def add_pushover(request):
         "po_expiration": td(seconds=settings.PUSHOVER_EMERGENCY_EXPIRATION),
     }
     return render(request, "integrations/add_pushover.html", ctx)
+
+@login_required
+def add_victorops(request):
+    ctx = {"page": "channels"}
+    return render(request, "integrations/add_victorops.html", ctx)
 
 
 def privacy(request):
