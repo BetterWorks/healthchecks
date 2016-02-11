@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from newrelic import agent
 
 from hc.api.decorators import uuid_or_400
 from hc.api.models import Check, Ping
@@ -18,13 +19,14 @@ executor = ThreadPoolExecutor(max_workers=1)
 @uuid_or_400
 @never_cache
 def ping(request, code):
-    executor.submit(_ping, request, code)
+    executor.submit(_ping, request.META, code)
     response = HttpResponse("OK")
     response["Access-Control-Allow-Origin"] = "*"
     return response
 
 
-def _ping(request, code):
+@agent.background_task()
+def _ping(headers, code):
     try:
         check = Check.objects.get(code=code)
     except Check.DoesNotExist:
@@ -39,7 +41,6 @@ def _ping(request, code):
     check.refresh_from_db()
 
     ping = Ping(owner=check)
-    headers = request.META
     ping.n = check.n_pings
     remote_addr = headers.get("HTTP_X_FORWARDED_FOR", headers["REMOTE_ADDR"])
     ping.remote_addr = remote_addr.split(",")[0]
