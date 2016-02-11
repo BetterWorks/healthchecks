@@ -1,4 +1,5 @@
 from django.test import Client, TestCase
+from mock import patch
 
 from hc.api.models import Check, Ping
 
@@ -8,6 +9,15 @@ class PingTestCase(TestCase):
     def setUp(self):
         super(PingTestCase, self).setUp()
         self.check = Check.objects.create()
+
+        def execute(f, *args, **kwargs):
+            return f(*args, **kwargs)
+        self.patch = patch('hc.api.views.executor.submit', execute)
+        self.patch.start()
+
+    def tearDown(self):
+        super(PingTestCase, self).tearDown()
+        self.patch.stop()
 
     def test_it_works(self):
         r = self.client.get("/ping/%s/" % self.check.code)

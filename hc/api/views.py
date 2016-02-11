@@ -1,5 +1,6 @@
 import json
 
+from concurrent.futures import ThreadPoolExecutor
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models import F
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -10,11 +11,20 @@ from django.views.decorators.csrf import csrf_exempt
 from hc.api.decorators import uuid_or_400
 from hc.api.models import Check, Ping
 
+executor = ThreadPoolExecutor(max_workers=1)
+
 
 @csrf_exempt
 @uuid_or_400
 @never_cache
 def ping(request, code):
+    executor.submit(_ping, request, code)
+    response = HttpResponse("OK")
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
+def _ping(request, code):
     try:
         check = Check.objects.get(code=code)
     except Check.DoesNotExist:
@@ -38,10 +48,7 @@ def ping(request, code):
     # If User-Agent is longer than 200 characters, truncate it:
     ping.ua = headers.get("HTTP_USER_AGENT", "")[:200]
     ping.save()
-
-    response = HttpResponse("OK")
-    response["Access-Control-Allow-Origin"] = "*"
-    return response
+    return
 
 
 @csrf_exempt
