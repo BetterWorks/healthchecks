@@ -19,19 +19,19 @@ executor = ThreadPoolExecutor(max_workers=1)
 @uuid_or_400
 @never_cache
 def ping(request, code):
-    executor.submit(_ping, request.META, code)
+    try:
+        check = Check.objects.get(code=code)
+    except Check.DoesNotExist:
+        return HttpResponseBadRequest()
+
+    executor.submit(_ping, request.META, check)
     response = HttpResponse("OK")
     response["Access-Control-Allow-Origin"] = "*"
     return response
 
 
 @agent.background_task()
-def _ping(headers, code):
-    try:
-        check = Check.objects.get(code=code)
-    except Check.DoesNotExist:
-        return HttpResponseBadRequest()
-
+def _ping(headers, check):
     check.n_pings = F("n_pings") + 1
     check.last_ping = timezone.now()
     if check.status == "new":
