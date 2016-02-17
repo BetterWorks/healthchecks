@@ -6,7 +6,7 @@ django-ses-backend==0.1.1
 Django==1.9.2
 django_compressor==2.0
 djmail==0.12.0.post1
-futures==3.0.4
+futures==3.0.5
 gunicorn==19.4.5
 honcho
 ipython==4.1.1
@@ -15,6 +15,6 @@ mock
 newrelic==2.60.0.46
 premailer==2.9.7
 psycopg2==2.6.1
-Pygments==2.1
+Pygments==2.1.1
 python-postmark
 requests==2.9.1

@@ -1,3 +1,5 @@
+import base64
+import os
 import uuid
 from datetime import timedelta
 
@@ -30,6 +32,7 @@ class Profile(models.Model):
     reports_allowed = models.BooleanField(default=True)
     ping_log_limit = models.IntegerField(default=100)
     token = models.CharField(max_length=128, blank=True)
+    api_key = models.CharField(max_length=128, blank=True)
 
     objects = ProfileManager()
 
@@ -50,6 +53,10 @@ class Profile(models.Model):
         path = reverse("hc-set-password", args=[token])
         ctx = {"set_password_link": settings.SITE_ROOT + path}
         emails.set_password(self.user.email, ctx)
+
+    def set_api_key(self):
+        self.api_key = base64.urlsafe_b64encode(os.urandom(24))
+        self.save()
 
     def send_report(self):
         # reset next report date first:
