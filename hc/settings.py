@@ -170,6 +170,9 @@ LOGGING = {
         'django': {
             'handlers': ['console']
         },
+        'djmail': {
+            'handlers': ['console']
+        },
         'py.warnings': {
             'handlers': ['console'],
             'level': 'ERROR'
