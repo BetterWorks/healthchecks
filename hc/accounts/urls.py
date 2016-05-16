@@ -22,8 +22,6 @@ urlpatterns = [
     url(r'^set_password/([\w-]+)/$',
         views.set_password, name="hc-set-password"),
 
-   url(r'^switch_team/([\w-]+)/$',
+    url(r'^switch_team/([\w-]+)/$',
         views.switch_team, name="hc-switch-team"),
-
-
 ]
