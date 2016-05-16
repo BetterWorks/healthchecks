@@ -1,5 +1,3 @@
-from django.contrib.auth.models import User
-
 from hc.api.models import Channel
 from hc.test import BaseTestCase
 
@@ -21,6 +19,13 @@ class RemoveChannelTestCase(BaseTestCase):
 
         assert Channel.objects.count() == 0
 
+    def test_team_access_works(self):
+        url = "/integrations/%s/remove/" % self.channel.code
+
+        self.client.login(username="bob@example.org", password="password")
+        self.client.post(url)
+        assert Channel.objects.count() == 0
+
     def test_it_handles_bad_uuid(self):
         url = "/integrations/not-uuid/remove/"
 
@@ -31,11 +36,7 @@ class RemoveChannelTestCase(BaseTestCase):
     def test_it_checks_owner(self):
         url = "/integrations/%s/remove/" % self.channel.code
 
-        mallory = User(username="mallory", email="mallory@example.org")
-        mallory.set_password("password")
-        mallory.save()
-
-        self.client.login(username="mallory@example.org", password="password")
+        self.client.login(username="charlie@example.org", password="password")
         r = self.client.post(url)
         assert r.status_code == 403
 

@@ -1,11 +1,11 @@
 from django.core import mail
 
-from hc.accounts.models import Profile
+from hc.accounts.models import Member
 from hc.api.models import Check
 from hc.test import BaseTestCase
 
 
-class LoginTestCase(BaseTestCase):
+class ProfileTestCase(BaseTestCase):
 
     def test_it_sends_set_password_link(self):
         self.client.login(username="alice@example.org", password="password")
@@ -15,8 +15,9 @@ class LoginTestCase(BaseTestCase):
         assert r.status_code == 302
 
         # profile.token should be set now
-        profile = Profile.objects.for_user(self.alice)
-        self.assertTrue(len(profile.token) > 10)
+        self.alice.profile.refresh_from_db()
+        token = self.alice.profile.token
+        self.assertTrue(len(token) > 10)
 
         # And an email should have been sent
         self.assertEqual(len(mail.outbox), 1)
@@ -30,8 +31,9 @@ class LoginTestCase(BaseTestCase):
         r = self.client.post("/accounts/profile/", form)
         assert r.status_code == 200
 
-        profile = Profile.objects.for_user(self.alice)
-        self.assertTrue(len(profile.api_key) > 10)
+        self.alice.profile.refresh_from_db()
+        api_key = self.alice.profile.api_key
+        self.assertTrue(len(api_key) > 10)
 
     def test_it_revokes_api_key(self):
         self.client.login(username="alice@example.org", password="password")
@@ -40,15 +42,14 @@ class LoginTestCase(BaseTestCase):
         r = self.client.post("/accounts/profile/", form)
         assert r.status_code == 200
 
-        profile = Profile.objects.for_user(self.alice)
-        self.assertEqual(profile.api_key, "")
+        self.alice.profile.refresh_from_db()
+        self.assertEqual(self.alice.profile.api_key, "")
 
     def test_it_sends_report(self):
         check = Check(name="Test Check", user=self.alice)
         check.save()
 
-        profile = Profile.objects.for_user(self.alice)
-        profile.send_report()
+        self.alice.profile.send_report()
 
         # And an email should have been sent
         self.assertEqual(len(mail.outbox), 1)
@@ -56,3 +57,68 @@ class LoginTestCase(BaseTestCase):
 
         self.assertEqual(message.subject, 'Monthly Report')
         self.assertIn("Test Check", message.body)
+
+    def test_it_adds_team_member(self):
+        self.client.login(username="alice@example.org", password="password")
+
+        form = {"invite_team_member": "1", "email": "frank@example.org"}
+        r = self.client.post("/accounts/profile/", form)
+        assert r.status_code == 200
+
+        member_emails = set()
+        for member in self.alice.profile.member_set.all():
+            member_emails.add(member.user.email)
+
+        self.assertEqual(len(member_emails), 2)
+        self.assertTrue("frank@example.org" in member_emails)
+
+        # And an email should have been sent
+        subj = ('You have been invited to join'
+                ' alice@example.org on healthchecks.io')
+        self.assertEqual(mail.outbox[0].subject, subj)
+
+    def test_add_team_member_checks_team_access_allowed_flag(self):
+        self.client.login(username="charlie@example.org", password="password")
+
+        form = {"invite_team_member": "1", "email": "frank@example.org"}
+        r = self.client.post("/accounts/profile/", form)
+        assert r.status_code == 403
+
+    def test_it_removes_team_member(self):
+        self.client.login(username="alice@example.org", password="password")
+
+        form = {"remove_team_member": "1", "email": "bob@example.org"}
+        r = self.client.post("/accounts/profile/", form)
+        assert r.status_code == 200
+
+        self.assertEqual(Member.objects.count(), 0)
+
+        self.bobs_profile.refresh_from_db()
+        self.assertEqual(self.bobs_profile.current_team, None)
+
+    def test_it_sets_team_name(self):
+        self.client.login(username="alice@example.org", password="password")
+
+        form = {"set_team_name": "1", "team_name": "Alpha Team"}
+        r = self.client.post("/accounts/profile/", form)
+        assert r.status_code == 200
+
+        self.alice.profile.refresh_from_db()
+        self.assertEqual(self.alice.profile.team_name, "Alpha Team")
+
+    def test_set_team_name_checks_team_access_allowed_flag(self):
+        self.client.login(username="charlie@example.org", password="password")
+
+        form = {"set_team_name": "1", "team_name": "Charlies Team"}
+        r = self.client.post("/accounts/profile/", form)
+        assert r.status_code == 403
+
+    def test_it_switches_to_own_team(self):
+        self.client.login(username="bob@example.org", password="password")
+
+        self.client.get("/accounts/profile/")
+
+        # After visiting the profile page, team should be switched back
+        # to user's default team.
+        self.bobs_profile.refresh_from_db()
+        self.assertEqual(self.bobs_profile.current_team, self.bobs_profile)

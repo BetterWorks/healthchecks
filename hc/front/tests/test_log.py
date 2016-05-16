@@ -1,5 +1,3 @@
-from django.contrib.auth.models import User
-
 from hc.api.models import Check, Ping
 from hc.test import BaseTestCase
 
@@ -21,6 +19,15 @@ class LogTestCase(BaseTestCase):
         r = self.client.get(url)
         self.assertContains(r, "Dates and times are", status_code=200)
 
+    def test_team_access_works(self):
+        url = "/checks/%s/log/" % self.check.code
+
+        # Logging in as bob, not alice. Bob has team access so this
+        # should work.
+        self.client.login(username="bob@example.org", password="password")
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+
     def test_it_handles_bad_uuid(self):
         url = "/checks/not-uuid/log/"
 
@@ -37,10 +44,6 @@ class LogTestCase(BaseTestCase):
         assert r.status_code == 404
 
     def test_it_checks_ownership(self):
-        charlie = User(username="charlie", email="charlie@example.org")
-        charlie.set_password("password")
-        charlie.save()
-
         url = "/checks/%s/log/" % self.check.code
         self.client.login(username="charlie@example.org", password="password")
         r = self.client.get(url)

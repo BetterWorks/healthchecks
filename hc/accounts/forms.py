@@ -19,3 +19,15 @@ class ReportSettingsForm(forms.Form):
 
 class SetPasswordForm(forms.Form):
     password = forms.CharField()
+
+
+class InviteTeamMemberForm(forms.Form):
+    email = LowercaseEmailField()
+
+
+class RemoveTeamMemberForm(forms.Form):
+    email = LowercaseEmailField()
+
+
+class TeamNameForm(forms.Form):
+    team_name = forms.CharField(max_length=200, required=True)

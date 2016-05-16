@@ -1,6 +1,5 @@
 from django.contrib.auth.hashers import make_password
 
-from hc.accounts.models import Profile
 from hc.test import BaseTestCase
 
 
@@ -8,7 +7,6 @@ class CheckTokenTestCase(BaseTestCase):
 
     def setUp(self):
         super(CheckTokenTestCase, self).setUp()
-        self.profile = Profile(user=self.alice)
         self.profile.token = make_password("secret-token")
         self.profile.save()
 
