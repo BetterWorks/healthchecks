@@ -2,8 +2,8 @@
 set -e
 
 if [ -z "$WEB_CONCURRENCY" ]; then
-  export WEB_CONCURRENCY=6
-  echo "Setting WEB_CONCURRENCY=6"
+  export WEB_CONCURRENCY=4
+  echo "Setting WEB_CONCURRENCY=4"
 fi
 
 bin/start-nginx \
