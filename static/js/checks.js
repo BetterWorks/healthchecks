@@ -4,13 +4,17 @@ $(function () {
     var HOUR = {name: "hour", nsecs: MINUTE.nsecs * 60};
     var DAY = {name: "day", nsecs: HOUR.nsecs * 24};
     var WEEK = {name: "week", nsecs: DAY.nsecs * 7};
-    var MONTH = {name: "month", nsecs: DAY.nsecs * 30};
-    var UNITS = [MONTH, WEEK, DAY, HOUR, MINUTE];
+    var UNITS = [WEEK, DAY, HOUR, MINUTE];
 
     var secsToText = function(total) {
         var remainingSeconds = Math.floor(total);
         var result = "";
         for (var i=0, unit; unit=UNITS[i]; i++) {
+            if (unit === WEEK && remainingSeconds % unit.nsecs != 0) {
+                // Say "8 days" instead of "1 week 1 day"
+                continue
+            }
+
             var count = Math.floor(remainingSeconds / unit.nsecs);
             remainingSeconds = remainingSeconds % unit.nsecs;
 
@@ -135,11 +139,6 @@ $(function () {
         $(".my-checks-email").removeClass("off");
     });
 
-    $(".selectable").click(function() {
-        $(this).tooltip("hide");
-        this.select();
-    });
-
     $("#my-checks-tags button").click(function() {
         // .active has not been updated yet by bootstrap code,
         // so cannot use it
@@ -175,6 +174,20 @@ $(function () {
         // Mobile: for each list item, see if it needs to be shown or hidden
         $("#checks-list > li").each(applyFilters);
 
+    });
+
+    $(".my-checks-url").click(function(e) {
+        var a = e.target;
+        var url = a.getAttribute("href");
+        var email = a.getAttribute("data-email");
+
+        $(".ex", "#show-usage-modal").text(url);
+        $(".em", "#show-usage-modal").text(email);
+
+        $(a).tooltip("hide");
+        $("#show-usage-modal").modal("show");
+
+        return false;
     });
 
 });
