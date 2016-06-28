@@ -1,7 +1,8 @@
+from mock import patch
+
 from hc.accounts.models import Profile
 from hc.payments.models import Subscription
 from hc.test import BaseTestCase
-from mock import patch
 
 
 class CreatePlanTestCase(BaseTestCase):

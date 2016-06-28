@@ -6,10 +6,11 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from newrelic import agent
+
 from hc.api import schemas
 from hc.api.decorators import check_api_key, uuid_or_400, validate_json
 from hc.api.models import Check, Ping
-from newrelic import agent
 
 executor = ThreadPoolExecutor(max_workers=1)
 

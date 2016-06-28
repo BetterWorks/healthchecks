@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
+
 from hc.api.models import Check
 
 

@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
-import dj_database_url
 import logging
 import os
+
 import cssutils
+import dj_database_url
+
 cssutils.log.setLevel(logging.CRITICAL)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

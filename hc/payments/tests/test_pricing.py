@@ -1,4 +1,5 @@
 from django.test import override_settings
+
 from hc.payments.models import Subscription
 from hc.test import BaseTestCase
 

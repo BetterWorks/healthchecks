@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import make_password
+
 from hc.test import BaseTestCase
 
 

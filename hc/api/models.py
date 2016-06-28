@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
+
 from hc.api import transports
 from hc.lib import emails
 

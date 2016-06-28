@@ -1,10 +1,10 @@
 import json
 
 import requests
-
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
+
 from hc.lib import emails
 from six.moves.urllib.parse import quote
 

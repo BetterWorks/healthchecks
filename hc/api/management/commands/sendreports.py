@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils import timezone
+
 from hc.accounts.models import Profile
 from hc.api.models import Check
 
