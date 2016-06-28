@@ -1,11 +1,10 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from mock import patch
-
-from hc.api.management.commands.sendalerts import handle_many
+from hc.api.management.commands.sendalerts import Command, handle_many
 from hc.api.models import Check
 from hc.test import BaseTestCase
+from mock import patch
 
 
 class SendAlertsTestCase(BaseTestCase):
@@ -29,3 +28,12 @@ class SendAlertsTestCase(BaseTestCase):
             handled_names.append(args[0].name)
 
         assert set(names) == set(handled_names)
+
+    def test_it_handles_grace_period(self):
+        check = Check(user=self.alice, status="up")
+        # 1 day 30 minutes after ping the check is in grace period:
+        check.last_ping = timezone.now() - timedelta(days=1, minutes=30)
+        check.save()
+
+        # Expect no exceptions--
+        Command().handle_one(check)

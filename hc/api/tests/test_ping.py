@@ -1,7 +1,6 @@
 from django.test import Client, TestCase
-from mock import patch
-
 from hc.api.models import Check, Ping
+from mock import patch
 
 
 class PingTestCase(TestCase):

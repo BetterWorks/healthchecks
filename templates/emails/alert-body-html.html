@@ -1,105 +1,24 @@
-{% load humanize hc_extras %}
+{% extends "emails/base.html" %}
+{% block content %}
 
-<style>
-    th {
-        text-align: left;
-        padding: 8px;
-    }
-
-    td {
-        border-top: 1px solid #ddd;
-        padding: 8px;
-    }
-
-    .badge {
-        font-size: 10px;
-        color: white;
-        padding: 4px;
-        font-family: sans;
-    }
-
-    .new { background: #AAA; }
-    .paused { background: #AAA; }
-    .up { background: #5cb85c; }
-    .grace { background: #f0ad4e; }
-    .down { background: #d9534f; }
-
-
-    .unnamed {
-        color: #888;
-        font-style: italic;
-    }
-
-</style>
-
-<p>Hello,</p>
-<p>This is a notification sent by
-    {% if host %}
-        {{ host }}
-    {% else %}
-        <a href="https://healthchecks.io">healthchecks.io</a>.
-    {% endif %}
+<h1>Hello,</h1>
+<p>
+    This is a notification sent by <a href="https://healthchecks.io">healthchecks.io</a>.
+    <br />
+    The check <strong>{{ check.name_then_code }}</strong>
+    has gone <strong>{{ check.status|upper }}</strong>.
 </p>
-<p>The check "{{ check.name_then_code }}" has gone {{ check.status }}.</p>
 <p>Here is a summary of all your checks:</p>
 
-<table>
-    <tr>
-        <th></th>
-        <th>Name</th>
-        <th>Period</th>
-        <th>Last Ping</th>
-        <th>Actions</th>
-    </tr>
-    {% for check in checks %}
-    <tr>
-        <td>
-            {% if check.get_status == "new" %}
-                <span class="badge new">NEW</span>
-            {% elif check.get_status == "up" %}
-                <span class="badge up">UP</span>
-            {% elif check.get_status == "grace" %}
-                <span class="badge grace">LATE</span>
-            {% elif check.get_status == "down" %}
-                <span class="badge down">DOWN</span>
-            {% elif check.get_status == "paused" %}
-                <span class="badge paused">PAUSED</span>
-            {% endif %}
-        </td>
-        <td>
-            {% if check.name %}
-                {{ check.name }}
-            {% else %}
-                <span class="unnamed">unnamed</span>
-            {% endif %}
-            {% if check.tags %}
-                <br />
-                <small>{{ check.tags }}</small>
-            {% endif %}
-        </td>
-        <td>
-            {{ check.timeout|hc_duration }}
-        </td>
-        <td>
-            {% if check.last_ping %}
-                {{ check.last_ping|naturaltime }}
-            {% else %}
-                Never
-            {% endif %}
-        </td>
-        <td>
-            <a href="{{ check.log_url }}">View Log</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+{% include "emails/summary-html.html" %}
 
 <p>
-    --<br />
-    Regards,<br />
+    Thanks,<br>The
     {% if host %}
         {{ host }}
     {% else %}
-        healthchecks.io
+        Healthchecks<span>.</span>io
     {% endif %}
+    Team
 </p>
+{% endblock %}

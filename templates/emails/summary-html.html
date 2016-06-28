@@ -1,0 +1,98 @@
+{% load humanize hc_extras %}
+
+<style>
+    .checks {
+        margin: 30px 0;
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .checks th {
+        text-align: left;
+        padding: 8px;
+        font-size: 12px;
+        color: #9BA2AB;
+    }
+
+    .checks td {
+        border-top: 1px solid #EDEFF2;
+        padding: 16px 8px;
+    }
+
+    .badge {
+        font-size: 10px;
+        color: white;
+        padding: 4px;
+        font-family: sans;
+    }
+
+    .new { background: #AAA; }
+    .up { background: #5cb85c; }
+    .grace { background: #f0ad4e; }
+    .down { background: #d9534f; }
+
+
+    .unnamed {
+        color: #74787E;
+        font-style: italic;
+    }
+
+    .tag {
+        font-size: 12px;
+        background-color: #eee;
+        padding: 2px 4px;
+        color: #555;
+    }
+
+</style>
+
+<table class="checks" cellpadding="0" cellspacing="0">
+    <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Last Ping</th>
+    </tr>
+    {% for check in checks %}
+    <tr>
+        <td>
+            {% if check.get_status == "new" %}
+                <span class="badge new">NEW</span>
+            {% elif check.in_grace_period %}
+                <span class="badge grace">LATE</span>
+            {% elif check.get_status == "up" %}
+                <span class="badge up">UP</span>
+            {% elif check.get_status == "down" %}
+                <span class="badge down">DOWN</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if check.name %}
+                {% if check.name|length > 20 %}
+                    <small>{{ check.name }}</small>
+                {% else %}
+                    {{ check.name }}
+                {% endif %}
+            {% else %}
+                <span class="unnamed">unnamed</span>
+            {% endif %}
+            {% if check.tags %}
+                <br />
+                {% for tag in check.tags_list %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            {% endif %}
+        </td>
+        <td>
+            {% if check.last_ping %}
+                {{ check.last_ping|naturaltime }}
+            {% else %}
+                Never
+            {% endif %}
+
+        </td>
+        <td>
+            <a class="view-log" href="{{ check.log_url }}">Log</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

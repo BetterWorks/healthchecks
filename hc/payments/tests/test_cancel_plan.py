@@ -1,7 +1,6 @@
-from mock import patch
-
 from hc.payments.models import Subscription
 from hc.test import BaseTestCase
+from mock import patch
 
 
 class CancelPlanTestCase(BaseTestCase):

@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-
 from hc.api import transports
 from hc.lib import emails
 
@@ -81,18 +80,23 @@ class Check(models.Model):
         return errors
 
     def get_status(self):
-        if self.status in ("new", "paused"):
+        if self.status == "new":
             return self.status
 
         now = timezone.now()
 
-        if self.last_ping + self.timeout > now:
+        if self.last_ping + self.timeout + self.grace > now:
             return "up"
 
-        if self.last_ping + self.timeout + self.grace > now:
-            return "grace"
-
         return "down"
+
+    def in_grace_period(self):
+        if not self.last_ping:
+            return False
+
+        up_ends = self.last_ping + self.timeout
+        grace_ends = up_ends + self.grace
+        return up_ends < timezone.now() < grace_ends
 
     def assign_all_channels(self):
         if self.user:

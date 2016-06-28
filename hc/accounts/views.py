@@ -11,7 +11,6 @@ from django.contrib.auth.models import User
 from django.core import signing
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect, render
-
 from hc.accounts.forms import (
   EmailPasswordForm, InviteTeamMemberForm, RemoveTeamMemberForm, ReportSettingsForm,
   SetPasswordForm, TeamNameForm)

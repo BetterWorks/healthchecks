@@ -1,9 +1,9 @@
-from django.core import mail
-from mock import patch
 from requests.exceptions import ConnectionError, Timeout
 
+from django.core import mail
 from hc.api.models import Channel, Check, Notification
 from hc.test import BaseTestCase
+from mock import patch
 
 
 class NotifyTestCase(BaseTestCase):

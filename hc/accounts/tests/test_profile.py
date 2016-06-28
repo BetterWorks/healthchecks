@@ -1,5 +1,4 @@
 from django.core import mail
-
 from hc.accounts.models import Member
 from hc.api.models import Check
 from hc.test import BaseTestCase
